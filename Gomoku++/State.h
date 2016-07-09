@@ -20,10 +20,14 @@ class State
 {
 public:
 	State();
+	State(const State& Other);
 
 	void AI();
+	void _clearWeights();
 
 	void Move(int x, int y);
+
+	StoneColor GetWinner();
 
 public:
 	space pos[MAX][MAX];

@@ -73,76 +73,38 @@ int main(void)
 					{
 						record[putcnt][0] = x, record[putcnt][1] = y;
 						putcnt++;
-						pos[x][y].state = 1;
+						state.Move(x, y);
 						printf("●");
 						gotoxy(x * 2, y);
 						put = true;
 					}
 					break;
 				}
-				gotoxy(1, 21); printf(" Weight : %f                                   ", pos[x][y].weight);
+				gotoxy(1, 21); printf(" Weight : %f                                   ", state.pos[x][y].weight);
 				gotoxy(x * 2, y);
 			}
 
 			put = false;
 
-			for (int i = 0; i < MAX; i++)
-			{
-				for (int j = 0; j < MAX; j++)
-				{
-					if (pos[i][j].state == 1)
-					{
-						for (int k = 0; k < 8; k++)
-						{
-							cnt = 0;
-							tx = i, ty = j;
-							while (pos[tx][ty].state == 1 &&
-								tx >= 0 && ty >= 0 && tx < MAX && ty < MAX)
-							{
-								cnt++;
-								tx += checkpos[k][0];
-								ty += checkpos[k][1];
-							}
-							if (cnt == 5) p1win = true;
-							else cnt = 0;
-							if (p1win) break;
-						}
-					}
-					if (p1win) break;
-				}
-				if (p1win) break;
-			}
+			p1win = state.GetWinner() == BLACK;
 			if (p1win) break;
 			Sleep(500);
 
 			gotoxy(1, 20); printf("AI's turn");
 
-			for (int i = 0; i < MAX; i++)
-			for (int j = 0; j < MAX; j++)
-				pos[i][j].weight = 1.0;
-
+			state._clearWeights();
+			
 			put = false;
 			while (!put)
 			{
-				AI();
+				state.AI();
 				ex = ey = 0;
-				max_weight = 0.0;
 
-				for (int i = 0; i < MAX; i++)
+				// TODO: MCTS 적용하기
+				
+				if (state.pos[ex][ey].state == 0)
 				{
-					for (int j = 0; j < MAX; j++)
-					{
-						if (pos[i][j].weight > max_weight && pos[i][j].state == 0)
-						{
-							ex = i, ey = j;
-							max_weight = pos[i][j].weight;
-						}
-					}
-				}
-
-				if (pos[ex][ey].state == 0)
-				{
-					pos[ex][ey].state = 2;
+					state.Move(ex, ey);
 					record[putcnt][0] = ex, record[putcnt][1] = ey;
 					putcnt++;
 					gotoxy(ex * 2, ey);
@@ -153,32 +115,7 @@ int main(void)
 
 			put = false;
 
-			for (int i = 0; i < MAX; i++)
-			{
-				for (int j = 0; j < MAX; j++)
-				{
-					if (pos[i][j].state == 2)
-					{
-						for (int k = 0; k < 8; k++)
-						{
-							cnt = 0;
-							tx = i, ty = j;
-							while (pos[tx][ty].state == 2 &&
-								tx >= 0 && ty >= 0 && tx < MAX && ty < MAX)
-							{
-								cnt++;
-								tx += checkpos[k][0];
-								ty += checkpos[k][1];
-							}
-							if (cnt == 5) p2win = true;
-							else cnt = 0;
-							if (p2win) break;
-						}
-					}
-					if (p2win) break;
-				}
-				if (p2win) break;
-			}
+			p2win = state.GetWinner() == WHITE;
 			if (p2win) break;
 			Sleep(500);
 		}
@@ -205,9 +142,9 @@ int main(void)
 			for (int i = 0; i < putcnt; i++)
 			{
 				gotoxy(record[i][0] * 2, record[i][1]);
-				if (pos[record[i][0]][record[i][1]].state == 1)
+				if (state.pos[record[i][0]][record[i][1]].state == 1)
 					printf("●");
-				else if (pos[record[i][0]][record[i][1]].state == 2)
+				else if (state.pos[record[i][0]][record[i][1]].state == 2)
 					printf("○");
 				getch();
 			}
