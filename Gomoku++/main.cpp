@@ -1,106 +1,10 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <conio.h>
-#include <math.h>
 
-#define MAX 19
-
-struct space
-{
-	int state;
-	double weight;
-	bool checked;
-};
-
-space pos[MAX][MAX] = { 0, 1.0, false };
-int checkpos[8][2] = {
-	{ -1, 1 },
-	{ 0, 1 },
-	{ 1, 1 },
-	{ 1, 0 },
-	{ 1, -1 },
-	{ 0, -1 },
-	{ -1, -1 },
-	{ -1, 0 }
-};
-
-int lncheckpos[4][2] = {
-	{ -1, 1 },
-	{ 0, 1 },
-	{ 1, 1 },
-	{ 1, 0 },
-};
+#include "State.h"
 
 int record[361][2] = { 0 };
-
-void AI()
-{
-	for (int k = 0; k < 4; k++)
-	{
-		for (int i = 0; i < MAX; i++)
-		for (int j = 0; j < MAX; j++)
-			pos[i][j].checked = false;
-
-		for (int i = 0; i < MAX; i++)
-		{
-			for (int j = 0; j < MAX; j++)
-			{
-				if (pos[i][j].state == 1 && pos[i][j].checked == false)
-				{
-					int cnt = 0;
-					int tx = i, ty = j;
-					while (pos[tx][ty].state == 1 &&
-						tx >= 0 && ty >= 0 && tx <= MAX && ty <= MAX)
-					{
-						cnt++;
-						pos[tx][ty].checked = true;
-						tx += checkpos[k][0];
-						ty += checkpos[k][1];
-					}
-					if (i - checkpos[k][0] >= 0 && j - checkpos[k][1] >= 0 && i - checkpos[k][0] <= MAX && j - checkpos[k][1] <= MAX)
-					{
-						if (pos[i - checkpos[k][0]][j - checkpos[k][1]].state == 0 &&
-							pos[tx + checkpos[k][0]][ty + checkpos[k][1]].state == 0) pos[i - checkpos[k][0]][j - checkpos[k][1]].weight *= pow(2.1, cnt * cnt);
-						else pos[i - checkpos[k][0]][j - checkpos[k][1]].weight *= pow(1.8, cnt * cnt);
-					}
-					if (tx + checkpos[k][0] >= 0 && ty + checkpos[k][1] >= 0 && tx + checkpos[k][0] <= MAX && ty + checkpos[k][1] <= MAX)
-					{
-						if (pos[i - checkpos[k][0]][j - checkpos[k][1]].state == 0 &&
-							pos[tx + checkpos[k][0]][ty + checkpos[k][1]].state == 0) pos[tx][ty].weight *= pow(2.1, cnt * cnt);
-						else pos[tx][ty].weight *= pow(1.8, cnt * cnt);
-					}
-				}
-
-				if (pos[i][j].state == 2 && pos[i][j].checked == false)
-				{
-					for (int l = 0; l < 8; l++)
-					{
-						if (i + checkpos[l][0] >= 0 && j + checkpos[l][1] >= 0 && i + checkpos[l][0] <= MAX && j + checkpos[l][1] <= MAX)
-							pos[i + checkpos[l][0]][j + checkpos[l][1]].weight *= 1.08;
-					}
-
-					int cnt = 0;
-					int tx = i, ty = j;
-					while (pos[tx][ty].state == 2 &&
-						tx >= 0 && ty >= 0 && tx <= MAX && ty <= MAX)
-					{
-						cnt++;
-						pos[tx][ty].checked = true;
-						tx += checkpos[k][0];
-						ty += checkpos[k][1];
-					}
-					if (cnt > 1)
-					{
-						if (i - checkpos[k][0] >= 0 && j - checkpos[k][1] >= 0 && i - checkpos[k][0] <= MAX && j - checkpos[k][1] <= MAX)
-							pos[i - checkpos[k][0]][j - checkpos[k][1]].weight *= pow(1.2, cnt * cnt * 2);
-						if (tx + checkpos[k][0] >= 0 && ty + checkpos[k][1] >= 0 && tx + checkpos[k][0] <= MAX && ty + checkpos[k][1] <= MAX)
-							pos[tx][ty].weight *= pow(1.2, cnt * cnt * 2);
-					}
-				}
-			}
-		}
-	}
-}
 
 void gotoxy(int x, int y)
 {
@@ -115,6 +19,8 @@ int main(void)
 	double max_weight;
 	char playerName[512] = "";
 
+	State state;
+
 	printf("\n Gomoku++ v1.2\n\n ⓒ 2016 Naissoft all rights reserved.\n\n 조작키 : w, s, a, d, 돌 놓기 Space\n");
 	printf("\n 시작하려면 플레이어 이름을 입력하시고 Enter를 누르세요.");
 	scanf(" %s", playerName);
@@ -122,11 +28,7 @@ int main(void)
 	while (1)
 	{
 		system("cls");
-
-		for (int i = 0; i < MAX; i++)
-		for (int j = 0; j < MAX; j++)
-			pos[i][j].state = 0, pos[i][j].weight = 1.0;
-
+	
 		for (int i = 0; i < 361; i++) record[i][0] = record[i][1] = 0;
 
 		for (int i = 0; i < MAX * 2; i += 2)
@@ -167,7 +69,7 @@ int main(void)
 					gotoxy(x * 2, y);
 					break;
 				case ' ':
-					if (pos[x][y].state == 0)
+					if (state.pos[x][y].state == 0)
 					{
 						record[putcnt][0] = x, record[putcnt][1] = y;
 						putcnt++;

@@ -80,8 +80,10 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MCTS.cpp" />
+    <ClCompile Include="State.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="State.h" />
     <ClInclude Include="MCTS.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
